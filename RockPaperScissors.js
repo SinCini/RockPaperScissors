@@ -1,5 +1,13 @@
 let humanScore = 0;
 let computerScore = 0;
+
+
+const button = document.getElementsById("Animate");
+button.addEventListener("click", Animate);
+function Animate()
+{
+    canvas.clear
+}
 function getComputerChoice()
 {
     const computerChoice = Math.random();
@@ -14,6 +22,7 @@ function getComputerChoice()
         return "scissors";
     }
 }
+
 function getHumanChoice()
 {
     const humanChoice = prompt("It's your turn! Please Type in rock, paper or scissors.");
@@ -57,3 +66,5 @@ function playGame()
     } else
         console.log("Draw");
 }
+
+//Classes for all the animations 
