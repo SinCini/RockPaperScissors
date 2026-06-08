@@ -1,30 +1,16 @@
 import { GAME_WIDTH, GAME_HEIGHT, GRID_SIZE } from "../core/constants.js";
-
+import { OpponentAnimations } from "./CharacterAnimations.js";
 export class RenderSystem{
     constructor(canvas){
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
 
-        this.targetFPS = 15; // desired framerate limit
+        this.targetFPS = 10; // desired framerate limit
         this.frameInterval = 1000 / this.targetFPS; 
         this.lastTime = 0;
-
-        //opponent sprite animation variables
-        this.oppImage = document.getElementById("Yshtola");
-        this.oppSpriteWidth = 975;
-        this.oppSpriteHeight = 1200;
-        this.oppWidth = this.oppSpriteWidth;
-        this.oppHeight = this.oppSpriteHeight
-        this.oppScale = .6;
-        this.oppX = GAME_WIDTH/2 - this.oppWidth *this.oppScale/2;
-        this.oppY = GAME_HEIGHT/2 - this.oppHeight *this.oppScale/2;
-        this.oppMinFrame = 0;
-        this.oppmaxFrame = 5;
-        this.oppFrame = 0;
-        this.oppFrameX = 1;
-        this.oppFrameY = 0;
-        this.animate = false;
-
+        this.gamePaused = false;
+        this.opp = new OpponentAnimations(this);
+        this.animateOpp = true;
     }
     render(timestamp, time)
     {
@@ -32,60 +18,31 @@ export class RenderSystem{
         this.ctx.fillStyle = "#0f3460";
         this.ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);
 
-        //this.renderGrid();
         const deltaTime = timestamp - this.lastTime;
-        this.renderOpponent();
-        if(this.animate)
+        this.renderMainMenu();
+        //Section for handling opponent animation
+        this.opp.renderOpponent();
+        if(this.animateOpp)
         {
             if(deltaTime >= this.frameInterval)
             {
                 this.lastTime = timestamp -(deltaTime % this.frameInterval);
-                this.updateOppSprite();
+                this.opp.updateOppSprite();
             }
         }
         this.renderTimer(time);
+        if(this.gamePaused)
+        {
+            this.renderPauseMenu();
+        }
     }
-    renderTimer(time)
+    changeFPS(newFPS)
     {
-        this.ctx.font = "100px Arial";
-        this.ctx.strokeText(time, GAME_WIDTH - 150, 100);
+        this.targetFPS = newFPS;
     }
-    //Methods to render opponent
-    renderOpponent()
+    togglePause(pause)
     {
-        //Draw image(image, 
-        // sx:x coord to start clipping, sy:y coord to start clipping, 
-        // swidth:width of image, sheight:height of image
-        //x: coord to place image, y: coord to place image
-        //width: of image to use, height: of image to use)
-        this.ctx.drawImage(this.oppImage,
-            this.oppFrameX* this.oppSpriteWidth, this.oppFrameY* this.oppSpriteHeight,
-            this.oppSpriteWidth, this.oppSpriteHeight,
-            this.oppX,this.oppY, 
-            this.oppWidth*this.oppScale, this.oppHeight*this.oppScale);
-    }
-    updateOppSprite()
-    {
-        if(this.oppFrameX < 4) this.oppFrameX++
-        else this.oppFrameX = 1;
-        this.oppframe = this.frame < this.maxFrame ? this.frame +1 : this.oppMinFrame;
-        this.oppFrameX = this.oppFrame % 5;
-        this.oppframeY = Math.floor(this.frame/5);
-    }
-    setOppAnimation(newMinFrame, newMaxFrame, )
-    {
-        this.oppMinFrame = newMinFrame;
-        this.oppmaxFrame = newMaxFrame;
-        this.frame = this.oppMinFrame;
-    }
-    changeOppSpriteSheet(character)
-    {
-        this.oppImage = document.getElementById(character);
-        console.log(this.oppImage);
-    }
-    toggleAnimation()
-    {
-        this.animate = !this.animate;
+        this.gamePaused = pause;
     }
     renderGrid()
     {
@@ -106,5 +63,21 @@ export class RenderSystem{
             this.ctx.stroke();
         }
     }
+    renderPauseMenu()
+    {
 
+    }
+    renderTimer(time)
+    {
+        this.ctx.font = "100px Arial";
+        this.ctx.strokeText(time, GAME_WIDTH - 150, 100);
+    }
+    renderMainMenu()
+    {
+        this.ctx.font = "100px Arial";
+        this.ctx.fillStyle = "red";
+        this.ctx.fillText("ジャンケンポン", GAME_WIDTH/4, 100);
+        this.ctx.fillText("あっちむいてホイ！", GAME_WIDTH/4 - 100, 200);
+    }
+    
 }

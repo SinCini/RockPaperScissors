@@ -1,24 +1,32 @@
 import { GAME_WIDTH, GAME_HEIGHT } from "./constants.js";
 import { RenderSystem } from "../Systems/RenderSystem.js";
-
+import { ComputerDecisions } from "./RockPaperScissors.js";
 export class Game {
     constructor()
     {
-        let rps = false;
-        let amt = false;
-        this.canvas = document.getElementById("gameCanvas");
-        this.ctx = this.canvas.getContext("2d");
-        this.RenderSystem = new RenderSystem(this.canvas);
-        this.lastTime = 0;
-        this.frameInterval = 10;
+        //#region game variables
+        this.rps = false;
+        this.amt = false;
+        this.score = 0;
+        this.gameStarted = false;
+        this.gamePaused = false;
         this.lastPickedRPS = "rock";
         this.lastpickedAMT = "up";
-
 
         this.initialTime = 60;
         this.remainingTime = this.initialTime;
         this.round = 1;
+        this.compChoice = "";
+        this.comp = new ComputerDecisions();
+        
+        //#endregion
+        this.canvas = document.getElementById("gameCanvas");
+        this.ctx = this.canvas.getContext("2d");
+        this.RenderSystem = new RenderSystem(this.canvas);
         this.init();
+
+        this.lastTime = 0;
+        this.frameInterval = 10;
     }
     init()
     {
@@ -55,43 +63,73 @@ export class Game {
     {
         this.RenderSystem.render(timestamp, this.remainingTime);
         requestAnimationFrame((t)=> this.gameLoop(t));
+        if(!this.gamePaused)
+        {
+            if(this.remainingTime === 0)
+            {
 
+            } else
+            {
+                if(this.rps)
+                {
+                    this.RPS();
+                }
+                if(this.amt)
+                {
+                    this.AMT();
+                }
+            }
+        } else
+        {
+
+        }
     }
     playerInput(keyPressed)
     {
-        console.log(keyPressed);
-        if(rps)
+        if(this.gameStarted)
         {
-            var key = keyPressed.key || keyPressed.keyCode;
-            if(key === "a" || key === "ArrowLeft")
-            {
-                this.lastPickedRPS = "Rock";
-            }
-            if(key === "s" || key === "ArrowDown")
-            {
-                this.lastPickedRPS = "Scissors";
-            }
-            if(key === "d" || key === "ArrowRight")
-            {
-                this.lastPickedRPS = "Paper"
-            }
-        } else if(amt)
+                var key = keyPressed.key || keyPressed.keyCode;
+                if(key === "escape" || key === "ArrowLeft")
+                {
+                    this.gamePaused = !this.gamePaused;
+                }
+        }
+        if(!this.gamePaused)
         {
-            if(key === "a" || key === "ArrowLeft")
+            console.log(keyPressed);
+            if(rps)
             {
-                this.lastpickedAMT = "Left"
-            }
-            if(key === "s" || key === "ArrowDown")
+                var key = keyPressed.key || keyPressed.keyCode;
+                if(key === "a" || key === "ArrowLeft")
+                {
+                    this.lastPickedRPS = "Rock";
+                }
+                if(key === "s" || key === "ArrowDown")
+                {
+                    this.lastPickedRPS = "Scissors";
+                }
+                if(key === "d" || key === "ArrowRight")
+                {
+                    this.lastPickedRPS = "Paper"
+                }
+            } else if(amt)
             {
-                this.lastpickedAMT = "Down";
-            }
-            if(key === "d" || key === "ArrowRight")
-            {
-                console.log("Right");
-            }
-            if(key === "w" || key === "ArrowUp")
-            {
-                console.log("Up");
+                if(key === "a" || key === "ArrowLeft")
+                {
+                    this.lastpickedAMT = "Left"
+                }
+                if(key === "s" || key === "ArrowDown")
+                {
+                    this.lastpickedAMT = "Down";
+                }
+                if(key === "d" || key === "ArrowRight")
+                {
+                    console.log("Right");
+                }
+                if(key === "w" || key === "ArrowUp")
+                {
+                    console.log("Up");
+                }
             }
         }
     }
@@ -104,5 +142,13 @@ export class Game {
         // alternatively just show wall clock time:
         output(new Date().toUTCString());
         }, 100); // update about every second
+    }
+    RPS()
+    {
+
+    }
+    AMT()
+    {
+
     }
 }
