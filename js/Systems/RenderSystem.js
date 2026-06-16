@@ -8,9 +8,15 @@ export class RenderSystem{
         this.targetFPS = 10; // desired framerate limit
         this.frameInterval = 1000 / this.targetFPS; 
         this.lastTime = 0;
+
+
         this.gamePaused = false;
+        this.gameStarted = false;
+
+
         this.opp = new OpponentAnimations(this);
         this.animateOpp = true;
+
     }
     render(timestamp, time)
     {
@@ -18,22 +24,29 @@ export class RenderSystem{
         this.ctx.fillStyle = "#0f3460";
         this.ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT);
 
-        const deltaTime = timestamp - this.lastTime;
+        if(!this.gameStarted)
         this.renderMainMenu();
+        const deltaTime = timestamp - this.lastTime;
+
         //Section for handling opponent animation
-        this.opp.renderOpponent();
-        if(this.animateOpp)
+        if(this.gameStarted)
         {
-            if(deltaTime >= this.frameInterval)
+            this.opp.renderOpponent();
+            if(this.animateOpp)
             {
-                this.lastTime = timestamp -(deltaTime % this.frameInterval);
-                this.opp.updateOppSprite();
+                if(deltaTime >= this.frameInterval)
+                {
+                    //console.log(deltaTime);
+                    this.lastTime = timestamp -(deltaTime % this.frameInterval);
+                    this.opp.updateOppSprite();
+                }
             }
-        }
-        this.renderTimer(time);
-        if(this.gamePaused)
-        {
-            this.renderPauseMenu();
+            this.renderTimer(time);
+            //renders the pause menu
+            if(this.gamePaused)
+            {
+                this.renderPauseMenu();
+            }
         }
     }
     changeFPS(newFPS)
@@ -78,6 +91,7 @@ export class RenderSystem{
         this.ctx.fillStyle = "red";
         this.ctx.fillText("ジャンケンポン", GAME_WIDTH/4, 100);
         this.ctx.fillText("あっちむいてホイ！", GAME_WIDTH/4 - 100, 200);
+        this.ctx.fillText("FFXIV", GAME_WIDTH/3, 300);
     }
     
 }

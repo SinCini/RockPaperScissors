@@ -5,19 +5,28 @@ export class Game {
     constructor()
     {
         //#region game variables
-        this.rps = false;
-        this.amt = false;
-        this.score = 0;
         this.gameStarted = false;
         this.gamePaused = false;
-        this.lastPickedRPS = "rock";
-        this.lastpickedAMT = "up";
+        this.RPSstatuses = ["win", "loss", "draw"];
+        this.score = 0;
+        this.rps = false;
+        this.amt = false;
 
         this.initialTime = 60;
-        this.remainingTime = this.initialTime;
+        this.remainingTime = 60;
         this.round = 1;
-        this.compChoice = "";
+        this.maxRound = 5;
+        this.lastPickedRPS = "rock";
+        this.lastpickedAMT = "up";
+        this.timerStarted = false;
+
+
         this.comp = new ComputerDecisions();
+        this.compChoiceRPS = "";
+        this.compChoiceAMT = "";
+
+        this.compRPSStatus = null;
+        this.compAMTStatus = null;
         
         //#endregion
         this.canvas = document.getElementById("gameCanvas");
@@ -27,6 +36,8 @@ export class Game {
 
         this.lastTime = 0;
         this.frameInterval = 10;
+        //Array for random order
+        this.OpponentArray = [];
     }
     init()
     {
@@ -63,13 +74,23 @@ export class Game {
     {
         this.RenderSystem.render(timestamp, this.remainingTime);
         requestAnimationFrame((t)=> this.gameLoop(t));
+        
+        //console.log(this.remainingTime);
+        const deltaTime = timestamp - this.lastTime;
+
+        //console.log(deltaTime);
+
         if(!this.gamePaused)
         {
             if(this.remainingTime === 0)
             {
-
+                if(this.round < this.maxRound)
+                this.nextRound();
+                else
+                this.endGame();
             } else
             {
+                this.CountdownTimer(deltaTime, timestamp);
                 if(this.rps)
                 {
                     this.RPS();
@@ -89,30 +110,38 @@ export class Game {
         if(this.gameStarted)
         {
                 var key = keyPressed.key || keyPressed.keyCode;
-                if(key === "escape" || key === "ArrowLeft")
+                if(key === "Escape" || key === "ArrowLeft")
                 {
                     this.gamePaused = !this.gamePaused;
                 }
         }
+        if(!this.gameStarted)
+        {
+            var key = keyPressed.key || keyPressed.keyCode;
+            if(key === "Enter")
+            {
+                this.StartGame();
+            }
+        }
         if(!this.gamePaused)
         {
             console.log(keyPressed);
-            if(rps)
+            if(this.rps)
             {
                 var key = keyPressed.key || keyPressed.keyCode;
                 if(key === "a" || key === "ArrowLeft")
                 {
-                    this.lastPickedRPS = "Rock";
+                    this.lastPickedRPS = "rock";
                 }
                 if(key === "s" || key === "ArrowDown")
                 {
-                    this.lastPickedRPS = "Scissors";
+                    this.lastPickedRPS = "scissors";
                 }
                 if(key === "d" || key === "ArrowRight")
                 {
-                    this.lastPickedRPS = "Paper"
+                    this.lastPickedRPS = "paper"
                 }
-            } else if(amt)
+            } else if(this.amt)
             {
                 if(key === "a" || key === "ArrowLeft")
                 {
@@ -133,22 +162,153 @@ export class Game {
             }
         }
     }
-    StartTimer(time)
+    StartGame()
     {
-        var start = Date.now();
-        setInterval(function() {
-        var delta = Date.now() - start; // milliseconds elapsed since start
-        output(Math.floor(delta / 1000)); // in seconds
-        // alternatively just show wall clock time:
-        output(new Date().toUTCString());
-        }, 100); // update about every second
+        if(!this.gameStarted)
+        {
+            this.RenderSystem.gameStarted = true;
+            this.timerStarted = true;
+            this.gameStarted = true;
+            this.rps = true;
+        }
     }
-    RPS()
+    CountdownTimer(deltaTime, timestamp)
+    {
+        if(this.timerStarted)
+        {
+            if(deltaTime >= 1000 && this.remainingTime > 0)
+            {
+                this.lastTime = timestamp;
+                this.remainingTime--;
+            }
+        }
+    }
+
+    //#region Methods that trigger events in-game
+    nextRound()
+    {
+        this.round++;
+    }
+    endGame()
     {
 
+    }
+    fillOpponentArray()
+    {
+        this.OpponentArray.push("Miqo");
+        this.OpponentArray.push("Yshtola");
+        this.OpponentArray.push("Estinien");
+        this.OpponentArray.push("Sphene");
+        this.OpponentArray.push("Emet");
+        this.OpponentArray.push("Yotsuyu");
+        this.OpponentArray.sort(function(){return 0.5 -Math.random()});
+    }
+    //#endregion
+    //#region RPS/AMT methods
+    RPS()
+    {
+        if(this.compChoiceRPS === "")
+        {
+            this.compChoiceRPS = this.comp.getRPSChoice();
+        } else
+        //console.log(this.RenderSystem.opp.rpsAnimFinished);
+        if(this.RenderSystem.opp.rpsAnimFinished === true)
+        {
+            //console.log("compare RPS running");
+            if(this.compRPSStatus === null)
+            this.compareRPS();
+        }
+        if(this.RenderSystem.opp.rpsChoiceAnimFinished === true)
+        {
+            rps = false;
+            this.compChoiceRPS = "";
+            this.compRPSStatus = null;
+            amt = true;
+            this.RenderSystem.opp.rpsAnimActive = false;
+            this.RenderStatem.opp.amtAnimActive = true;
+        }
     }
     AMT()
     {
-
+        if(this.compChoiceAMT === "")
+        {
+            this.compChoiceAMT = this.comp.getAMTChoice();
+        }
+        if(this.RenderSystem.opp.amtAnimFinished === true)
+        {
+            if(this.RenderSystem.opp.amtChoiceAnimFinished)
+            {
+                if(this.compAMTstatus === null)
+                {
+                    this.compareAMT();
+                }
+            }
+        }
+        if(this.RenderSystem.opp.amtChoiceAnimFinished === true)
+        {
+            rps = true;
+            this.compChoiceAMT = "";
+            this.compAMTStatus = null;
+            amt = false;
+            this.RenderSystem.opp.rpsAnimActive = true;
+            this.RenderStatem.opp.amtAnimActive = false;
+        }
     }
+    compareRPS()
+    {
+        switch(this.compChoiceRPS)
+        {
+        case "rock":
+            if(this.lastPickedRPS === "rock")
+            {
+                this.compRPSStatus = this.RPSstatuses[2];
+            } else if(this.lastPickedRPS === "scissors")
+            {
+                this.compRPSStatus = this.RPSstatuses[1];
+            } else if(this.lastPickedRPS === "paper")
+            {
+                this.compRPSStatus = this.RPSstatuses[0];
+            }
+            break;
+        case "scissors":
+            if(this.lastPickedRPS === "rock")
+            {
+                this.compRPSStatus = this.RPSstatuses[1];
+            } else if(this.lastPickedRPS === "scissors")
+            {
+                this.compRPSStatus = this.RPSstatuses[2];
+            } else if(this.lastPickedRPS === "paper")
+            {
+                this.compRPSStatus = this.RPSstatuses[0];
+            }
+            break;
+        case "paper":
+            if(this.lastPickedRPS === "rock")
+            {
+                this.compRPSStatus= this.RPSstatuses[0];
+            } else if(this.lastPickedRPS === "scissors")
+            {
+                this.compRPSStatus = this.RPSstatuses[1];
+            } else if(this.lastPickedRPS === "paper")
+            {
+                this.compRPSStatus = this.RPSstatuses[2];
+            }
+            break;
+        }
+        this.RenderSystem.opp.rpsChoice(this.compChoiceRPS, this.compRPSStatus);
+        this.comp.setRPSStatus(this.compRPSStatus);
+    }
+    compareAMT()
+    {
+        if(this.compChoiceAMT === this.lastpickedAMT)
+        {
+            this.compAMTStatus = this.RPSstatuses[1];
+        } else
+        {
+            this.compAMTStatus = this.RPSstatuses[0];
+        }
+        this.RenderSystem.opp.amtChoice(this.compChoiceAMT, this.compAMTstatus);
+        this.comp.setAMTWin(this.compAMTStatus);
+    }
+    //#endregion
 }

@@ -5,59 +5,82 @@ export class ComputerDecisions
     constructor()
     {
         this.currentRPSChoice = "rock";
-        this.lostLastRPSRound = false;
-        this.wonLastRPSRound = false;
+        this.lastRPSStatus = "";
         this.lastRPSChoice = "";
-
-
+        this.lastAMTChoice ="";
     }
     getRPSChoice()
     {
-        if(this.wonLastRPSRound)
+        if(this.lastRPSStatus === "win")
         {
             if(this.getRandomInt(3) > 0)
             {
-                this.wonRPS();
+                return this.wonRPS();
             }
             else
             {
-                this.normalRPS();
+                return this.normalRPS();
             }
-        } else if(this.lostLastRPSRound)
+        } else if(this.lastRPSStatus === "loss")
         {
             if(this.getRandomInt(3) > 0)
             {
-                this.lostRPSRPS();
+                return this.lostRPSRPS();
             }
             else
             {
-                this.normalRPS();
+                return this.normalRPS();
             }
+        } else if(this.lastRPSStatus === "tie")
+        {
+            return this.normalRPS();
         } else
         {
-            this.normalRPS();
+            return this.normalRPS();
         }
     }
     lostRPS()
     {
-
+        if(this.lastRPSChoice === "rock")
+        {
+            return "scissors"
+        }
+        if(this.lastRPSChoice === "scissors")
+        {
+            return "paper"
+        }
+        if(this.lastRPSChoice === "paper")
+        {
+            return "rock";
+        }
     }
     wonRPS()
     {
-
+        if(this.lastRPSChoice === "rock")
+        {
+            return "paper"
+        }
+        if(this.lastRPSChoice === "scissors")
+        {
+            return "rock"
+        }
+        if(this.lastRPSChoice === "paper")
+        {
+            return "scissors";
+        }
     }
     normalRPS()
     {
         let number = this.getRandomInt(3);
-        if(computerChoice === 0)
+        if(number === 0)
         {
             this.lastRPSChoice = "rock";
             return this.lastRPSChoice;
-        } else if(computerChoice === 1)
+        } else if(number === 1)
         {
             this.lastRPSChoice = "paper";
             return this.lastRPSChoice;
-        } else
+        } else if(number===2)
         {
             this.lastRPSChoice = "scissors";
             return this.lastRPSChoice;
@@ -65,25 +88,27 @@ export class ComputerDecisions
     }
     getAMTChoice()
     {
-        let number = this.getRandomInt(3);
-        if(computerChoice === 0)
+        let number = this.getRandomInt(4);
+        if(number === 0)
         {
-            this.currentRPSChoice = "rock";
-        } else if(computerChoice === 1)
+            return "up";
+        } else if(number === 1)
         {
-            this.currentRPSChoice = "paper";
+            return "left";
+        } else if (number === 2)
+        {
+            return "down";
         } else
         {
-            this.currentRPSChoice = "scissors";
-        }
+            return "right";
+        } 
     }
-    setLoss(lossStatus)
+    setRPSStatus(status)
     {
-        this.lostLastRPSRound = lossStatus;
+        this.lastRPSStatus = status;
     }
-    setWin(winStatus)
+    setAMTWin(lossStatus)
     {
-        this.winStatus = lossStatus;
     }
     // Gets random int from 0 to max-1
     getRandomInt(max) 
