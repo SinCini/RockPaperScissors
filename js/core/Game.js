@@ -19,7 +19,7 @@ export class Game {
         this.lastPickedRPS = "rock";
         this.lastpickedAMT = "up";
         this.timerStarted = false;
-
+        this.endRoundEarly = false;
 
         this.comp = new ComputerDecisions();
         this.compChoiceRPS = "";
@@ -31,7 +31,7 @@ export class Game {
         //#endregion
         this.canvas = document.getElementById("gameCanvas");
         this.ctx = this.canvas.getContext("2d");
-        this.RenderSystem = new RenderSystem(this.canvas);
+        this.RenderSystem = new RenderSystem(this.canvas, this);
         this.init();
 
         this.lastTime = 0;
@@ -82,7 +82,7 @@ export class Game {
 
         if(!this.gamePaused)
         {
-            if(this.remainingTime === 0)
+            if(this.remainingTime === 0 || this.endRoundEarly === true)
             {
                 if(this.round < this.maxRound)
                 this.nextRound();
@@ -210,7 +210,9 @@ export class Game {
         if(this.compChoiceRPS === "")
         {
             this.compChoiceRPS = this.comp.getRPSChoice();
-        } else
+            this.compRPSStatus = null;
+            console.log(this.compChoiceRPS);
+        }
         //console.log(this.RenderSystem.opp.rpsAnimFinished);
         if(this.RenderSystem.opp.rpsAnimFinished === true)
         {
@@ -220,35 +222,37 @@ export class Game {
         }
         if(this.RenderSystem.opp.rpsChoiceAnimFinished === true)
         {
-            rps = false;
+            this.rps = false;
             this.compChoiceRPS = "";
-            this.compRPSStatus = null;
-            amt = true;
+            this.amt = true;
             this.RenderSystem.opp.rpsAnimActive = false;
-            this.RenderStatem.opp.amtAnimActive = true;
         }
     }
     AMT()
     {
-        if(this.compChoiceAMT === "")
-        {
-            this.compChoiceAMT = this.comp.getAMTChoice();
-        }
-        if(this.RenderSystem.opp.amtAnimFinished === true)
-        {
-            if(this.RenderSystem.opp.amtChoiceAnimFinished)
+            if(this.compChoiceAMT === "")
             {
-                if(this.compAMTstatus === null)
+                this.compChoiceAMT = this.comp.getAMTChoice();
+                this.RenderSystem.opp.amtChoice(this.compChoiceAMT);
+                console.log(this.RenderSystem.opp.amtOrder);
+                this.RenderSystem.opp.amtAnimActive = true;
+            }
+            if(this.RenderSystem.opp.amtAnimFinished === true)
+            {
+                if(this.RenderSystem.opp.amtChoiceAnimFinished)
                 {
-                    this.compareAMT();
+                    if(this.compAMTstatus === null)
+                    {
+                        this.compareAMT();
+                    }
                 }
             }
-        }
         if(this.RenderSystem.opp.amtChoiceAnimFinished === true)
         {
             rps = true;
             this.compChoiceAMT = "";
             this.compAMTStatus = null;
+            this.compRPSStatus = null;
             amt = false;
             this.RenderSystem.opp.rpsAnimActive = true;
             this.RenderStatem.opp.amtAnimActive = false;
@@ -256,6 +260,7 @@ export class Game {
     }
     compareRPS()
     {
+        //this.RPSstatuses = ["win", "loss", "draw"];
         switch(this.compChoiceRPS)
         {
         case "rock":
@@ -264,10 +269,10 @@ export class Game {
                 this.compRPSStatus = this.RPSstatuses[2];
             } else if(this.lastPickedRPS === "scissors")
             {
-                this.compRPSStatus = this.RPSstatuses[1];
+                this.compRPSStatus = this.RPSstatuses[0];
             } else if(this.lastPickedRPS === "paper")
             {
-                this.compRPSStatus = this.RPSstatuses[0];
+                this.compRPSStatus = this.RPSstatuses[1];
             }
             break;
         case "scissors":
@@ -309,6 +314,10 @@ export class Game {
         }
         this.RenderSystem.opp.amtChoice(this.compChoiceAMT, this.compAMTstatus);
         this.comp.setAMTWin(this.compAMTStatus);
+    }
+    endRound()
+    {
+
     }
     //#endregion
 }

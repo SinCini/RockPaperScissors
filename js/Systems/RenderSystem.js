@@ -1,7 +1,7 @@
 import { GAME_WIDTH, GAME_HEIGHT, GRID_SIZE } from "../core/constants.js";
 import { OpponentAnimations } from "./CharacterAnimations.js";
 export class RenderSystem{
-    constructor(canvas){
+    constructor(canvas, game){
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
 
@@ -14,7 +14,7 @@ export class RenderSystem{
         this.gameStarted = false;
 
 
-        this.opp = new OpponentAnimations(this);
+        this.opp = new OpponentAnimations(this, game);
         this.animateOpp = true;
 
     }

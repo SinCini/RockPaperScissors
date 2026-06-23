@@ -1,13 +1,14 @@
 import { GAME_WIDTH, GAME_HEIGHT, GRID_SIZE } from "../core/constants.js";
+import { Game } from "../core/Game.js";
 export class OpponentAnimations
 {
-    constructor(renderSystem)
+    constructor(renderSystem, game)
     {
         this.renderSystem = renderSystem;
-        //opponent sprite animation variables
+        //#region opponent sprite animation variables
         this.oppImage = document.getElementById("Yshtola");
-        this.oppSpriteWidth = 975;
-        this.oppSpriteHeight = 1200;
+        this.oppSpriteWidth = 1025;
+        this.oppSpriteHeight = 1139;
         this.oppWidth = this.oppSpriteWidth;
         this.oppHeight = this.oppSpriteHeight
         this.oppScale = .6;
@@ -18,11 +19,10 @@ export class OpponentAnimations
         this.oppFrame = 0;
         this.oppFrameX = 1;
         this.oppFrameY = 0;
-        this.oppLoopCount = 0;
-        this.oppLoopMax = 2;
         this.animate = true;
-        //opponent sprite animation checks;
-        this.rpsAnimOrder = [];
+        //#endregion
+        //#region opponent sprite animation checks
+
         this.introAnimActive = false;
         this.introAnimFinished = false;
         this.rpsAnimActive = true;
@@ -31,10 +31,25 @@ export class OpponentAnimations
         this.amtAnimActive = false;
         this.amtAnimFinished = false;
         this.amtChoiceAnimFinished = false;
-
+        //#endregion
         this.rpsStatus = null;
+        this.game = game;
+        //#region Animation Order Arrays
+        this.introAnimOrder = [];
+        this.rpsThrowAnimOrder = [1,2,3,4,1,2,3,4,1,2,3,4,5];
+        this.amtChoiceUpOrder = [0,1,2,3,4];
+        this.amtChoiceDownOrder = [0,5,6,7,8];
+        this.amtChoiceLeftOrder = [0,9,10,11,12];
+        this.amtChoiceRightOrder = [0,13,14,15,16];
+        this.amtOrder = [];
+        //#endregion
         //temp RPS values
-        this.rpsSpriteWidth = 950;
+        this.introSpriteWidth;
+        this.rpsThrowWidth = 1025;
+        this.rpsSpriteWidth = 1035;
+        this.rpsSpriteHeight;
+        this.amtChoiceWidth = 942;
+        this.amt;
     }
     renderOpponent()
     {
@@ -46,16 +61,8 @@ export class OpponentAnimations
         this.renderSystem.ctx.drawImage(this.oppImage,
             this.oppFrameX* this.oppSpriteWidth, this.oppFrameY* this.oppSpriteHeight,
             this.oppSpriteWidth, this.oppSpriteHeight,
-            this.oppX,this.oppY, 
+            this.oppX,this.oppY + 20, 
             this.oppWidth*this.oppScale, this.oppHeight*this.oppScale);
-        if(this.rpsAnimFinished && this.rpsAnimActive)
-        {
-            this.renderRPSReaction();
-        }
-        if(this.amtChoiceAnimFinished && this.amtAnimActive)
-        {
-            this.renderAMTReaction();
-        }
     }
 
     updateOppSprite()
@@ -69,6 +76,21 @@ export class OpponentAnimations
             {
                 if(!this.rpsChoiceAnimFinished)
                 {
+                    if(this.rpsStatus === "loss")
+                    {
+                        this.oppFrameX++;
+                        this.rpsChoiceAnimFinished = true; 
+                    } else if(this.rpsStatus === "draw")
+                    {
+                        console.log("calls Draw");
+                        this.oppFrame = 0;
+                        this.setOppAnimation(0, this.rpsThrowWidth);
+                        this.rpsAnimFinished = false;
+                        this.oppFrameX = this.rpsThrowAnimOrder[this.oppFrame];
+                        this.game.compChoiceRPS = "";
+                        this.game.compRPSStatus = null;
+                    } else
+                        this.rpsChoiceAnimFinished = true;
 
                 }
             }
@@ -87,12 +109,10 @@ export class OpponentAnimations
             }
         }
     }
-    setOppAnimation(newMinFrame, newMaxFrame, oppFrameY)
+    setOppAnimation(oppFrameY, spriteWidth)
     {
-        this.oppMinFrame = newMinFrame;
-        this.oppmaxFrame = newMaxFrame;
         this.oppFrameY = oppFrameY;
-        this.frame = this.oppMinFrame;
+        this.oppSpriteWidth = spriteWidth;
     }
     changeOppSpriteSheet(character)
     {
@@ -100,55 +120,28 @@ export class OpponentAnimations
     }
     rpsAnimation()
     {
-        if(this.oppFrameX < this.oppmaxFrame) 
+
+        if(this.oppFrame < this.rpsThrowAnimOrder.length-1) 
         {
-            console.log("oppframe: " + this.oppFrameX);
-            this.oppFrameX++;
+            this.oppFrame++;
+            this.oppFrameX = this.rpsThrowAnimOrder[this.oppFrame];
         }
         else 
         {
-            if(this.oppLoopCount < this.oppLoopMax)
-            { 
-                console.log("loop count: " + this.oppLoopCount);
-                this.oppLoopCount++;
-                this.oppFrameX = 1;
-                console.log("oppframe: in loop" + this.oppFrameX);
-                console.log(this.oppmaxFrame);
-            }
-            else
             this.rpsAnimFinished = true;
-        }
-    }
-    renderRPSReaction()
-    {
-        if(this.rpsStatus === "loss")
-        {
-            this.renderSystem.ctx.drawImage(this.oppImage,
-            2684, 1465,
-            350, 580,
-            this.oppX+ 250,this.oppY + 125, 
-            this.oppWidth/4, this.oppHeight/4);
-        }
-        if(this.rpsStatus === "win")
-        {
-            this.renderSystem.ctx.drawImage(this.oppImage,
-            2321, 1465,
-            350, 580,
-            this.oppX+ 250,this.oppY + 125, 
-            this.oppWidth/4, this.oppHeight/4);
-        }
-        if(this.rpsStatus === "draw")
-        {
-            this.renderSystem.ctx.drawImage(this.oppImage,
-            2321, 1465,
-            350, 580,
-            this.oppX+ 250,this.oppY + 125, 
-            this.oppWidth/4, this.oppHeight/4);
         }
     }
     amtAnimation()
     {
-
+        if(this.oppFrame < this.amtOrder.length-1) 
+        {
+            this.oppFrame++;
+            this.oppFrameX = this.amtOrder[this.oppFrame];
+        }
+        else 
+        {
+            this.amtAnimFinished = true;
+        }
     }
     toggleAnimation()
     {
@@ -157,7 +150,6 @@ export class OpponentAnimations
     rpsChoice(choice, status)
     {
         this.rpsStatus = status;
-            console.log(choice);
         switch(choice){
 
             case "rock":
@@ -171,60 +163,48 @@ export class OpponentAnimations
                 break; 
         }
     }
-    amtChoice(choice, status)
+    amtChoice(choice)
     {
-        this.amtStatus = status;
+        console.log(choice);
         switch(choice)
         {
             case "up":
-                this.amtUp();
+                this.amtOrder = this.amtChoiceUpOrder;
                 break;
             case "down":
-                this.amtDown();
+                this.amtOrder = this.amtChoiceDownOrder;
                 break;
             case "left":
-                this.amtLeft();
+                this.amtOrder = this.amtChoiceLeftOrder;
                 break;
             case "right":
-                this.amtRight();
+                this.amtOrder = this.amtChoiceRightOrder;
                 break;
         }
+        console.log(this.amtOrder);
+        this.oppFrame = 0;
+        this.setOppAnimation(2, this.amtChoiceWidth);
     }
+    //#region RPS Anim Methods
     oppRock()
     {
-        this.setOppAnimation(0,0,2);
+        this.setOppAnimation(1, this.rpsSpriteWidth);
         this.oppFrameX = 0;
-        this.oppFrameY = 2;
-        this.rpsChoiceAnimFinished = true;
+        //this.oppFrameY = 1;
+
     }
     oppScissors()
     {
-        this.setOppAnimation(1,1,2);
-        this.oppFrameX = 2;
-        this.oppFrameY = 2;
-        this.rpsChoiceAnimFinished = true;
+        this.setOppAnimation(1, this.rpsSpriteWidth);
+        this.oppFrameX = 4;
+        //this.oppFrameY = 1;
     }
     oppPaper()
     {
-        this.setOppAnimation(2,2,2);
-        this.oppFrameX = 1;
-        this.oppFrameY = 2;
-        this.rpsChoiceAnimFinished = true;
+        this.setOppAnimation(1, this.rpsSpriteWidth);
+        this.oppFrameX = 2;
+        //this.oppFrameY = 1;
     }
-    amtUp()
-    {
-
-    }
-    amtLeft()
-    {
-
-    }
-    amtDown()
-    {
-
-    }
-    amtRight()
-    {
-
-    }
+    //#endregion
+    //#region AMT Anim Methods
 }
