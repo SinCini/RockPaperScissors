@@ -29,6 +29,7 @@ export class OpponentAnimations
         this.rpsAnimFinished = false;
         this.rpsChoiceAnimFinished = false;
         this.amtAnimActive = false;
+        this.amtPeek = false;
         this.amtAnimFinished = false;
         this.amtChoiceAnimFinished = false;
         //#endregion
@@ -41,6 +42,11 @@ export class OpponentAnimations
         this.amtChoiceDownOrder = [0,5,6,7,8];
         this.amtChoiceLeftOrder = [0,9,10,11,12];
         this.amtChoiceRightOrder = [0,13,14,15,16];
+        this.amtPeekUpOrder = [0,4];
+        this.amtPeekDownOrder = [0,8];
+        this.amtPeekLeftOrder = [0,12];
+        this.amtPeekRightOrder = [0,13];
+        this.amtPeekOrder = [];
         this.amtOrder = [];
         //#endregion
         //temp RPS values
@@ -69,8 +75,10 @@ export class OpponentAnimations
     {
         if(this.rpsAnimActive)
         {
+            console.log("rps anim active:"+this.rpsAnimActive)
             if(!this.rpsAnimFinished)
             {
+                console.log("rpsAnimation in oppspriteupdate")
                 this.rpsAnimation();
             } else
             {
@@ -82,7 +90,6 @@ export class OpponentAnimations
                         this.rpsChoiceAnimFinished = true; 
                     } else if(this.rpsStatus === "draw")
                     {
-                        console.log("calls Draw");
                         this.oppFrame = 0;
                         this.setOppAnimation(0, this.rpsThrowWidth);
                         this.rpsAnimFinished = false;
@@ -100,12 +107,6 @@ export class OpponentAnimations
             if(!this.amtAnimFinished)
             {
                 this.amtAnimation();
-            } else
-            {
-                if(!this.amtChoiceAnimFinished)
-                {
-
-                }
             }
         }
     }
@@ -120,7 +121,7 @@ export class OpponentAnimations
     }
     rpsAnimation()
     {
-
+        console.log("rps Animation");
         if(this.oppFrame < this.rpsThrowAnimOrder.length-1) 
         {
             this.oppFrame++;
@@ -130,17 +131,58 @@ export class OpponentAnimations
         {
             this.rpsAnimFinished = true;
         }
+
+
+    }
+    resetRPS()
+    {
+        //console.log("reset called");
+        this.amtAnimActive = false;
+        this.rpsChoiceAnimFinished = false;
+        console.log(this.amtAnimActive);        
+        this.rpsAnimActive = true;
+        this.setOppAnimation(0, this.rpsThrowWidth);
+        this.rpsAnimFinished = false;
+        this.amtAnimFinished = false;
+        this.oppFrame = 0;
     }
     amtAnimation()
     {
-        if(this.oppFrame < this.amtOrder.length-1) 
+        if(this.rpsStatus === "win")
         {
-            this.oppFrame++;
-            this.oppFrameX = this.amtOrder[this.oppFrame];
-        }
-        else 
+            if(this.oppFrame < this.amtOrder.length-1) 
+            {
+                this.oppFrame++;
+                this.oppFrameX = this.amtOrder[this.oppFrame];
+            }
+            else 
+            {
+                this.amtAnimFinished = true;
+            }
+        } else if(this.rpsStatus ==="loss")
         {
-            this.amtAnimFinished = true;
+            if(this.amtPeek)
+            {
+                if(this.oppFrame < this.amtPeekOrder.length-1) 
+                {
+                    this.oppFrame++;
+                    this.oppFrameX = this.amtPeekOrder[this.oppFrame];
+                } else
+                {
+                    this.amtPeek = false;
+                }
+            } else
+            {
+                if(this.oppFrame < this.amtOrder.length-1) 
+                {
+                    this.oppFrame++;
+                    this.oppFrameX = this.amtOrder[this.oppFrame];
+                }
+                else 
+                {
+                    this.amtAnimFinished = true;
+                }
+            }
         }
     }
     toggleAnimation()
@@ -165,25 +207,50 @@ export class OpponentAnimations
     }
     amtChoice(choice)
     {
-        console.log(choice);
-        switch(choice)
+        if(this.rpsStatus === "win")
         {
-            case "up":
-                this.amtOrder = this.amtChoiceUpOrder;
-                break;
-            case "down":
-                this.amtOrder = this.amtChoiceDownOrder;
-                break;
-            case "left":
-                this.amtOrder = this.amtChoiceLeftOrder;
-                break;
-            case "right":
-                this.amtOrder = this.amtChoiceRightOrder;
-                break;
+            switch(choice)
+            {
+                case "up":
+                    this.amtOrder = this.amtChoiceUpOrder;
+                    break;
+                case "down":
+                    this.amtOrder = this.amtChoiceDownOrder;
+                    break;
+                case "left":
+                    this.amtOrder = this.amtChoiceLeftOrder;
+                    break;
+                case "right":
+                    this.amtOrder = this.amtChoiceRightOrder;
+                    break;
+            }
+            this.oppFrame = 0;
+            this.setOppAnimation(2, this.amtChoiceWidth);
+        } else if(this.rpsStatus === "loss")
+        {
+            switch(choice)
+            {
+                case "up":
+                    this.amtPeek = this.amtPeekUpOrder;
+                    this.amtOrder = this.amtChoiceUpOrder;
+                    break;
+                case "down":
+                    this.amtPeek = this.amtPeekDownOrder;
+                    this.amtOrder = this.amtChoiceDownOrder;
+                    break;
+                case "left":
+                    this.amtPeek = this.amtPeekLeftOrder;
+                    this.amtOrder = this.amtChoiceLeftOrder;
+                    break;
+                case "right":
+                    this.amtPeek = this.amtPeekRightOrder;
+                    this.amtOrder = this.amtChoiceRightOrder;
+                    break;
+            }
+            this.oppFrame = 0;
+            this.setOppAnimation(2, this.amtChoiceWidth);
+            this.amtPeek = true;
         }
-        console.log(this.amtOrder);
-        this.oppFrame = 0;
-        this.setOppAnimation(2, this.amtChoiceWidth);
     }
     //#region RPS Anim Methods
     oppRock()

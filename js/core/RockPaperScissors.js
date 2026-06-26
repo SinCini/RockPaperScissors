@@ -25,7 +25,7 @@ export class ComputerDecisions
         {
             if(this.getRandomInt(3) > 0)
             {
-                return this.lostRPSRPS();
+                return this.lostRPS();
             }
             else
             {

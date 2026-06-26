@@ -125,7 +125,6 @@ export class Game {
         }
         if(!this.gamePaused)
         {
-            console.log(keyPressed);
             if(this.rps)
             {
                 var key = keyPressed.key || keyPressed.keyCode;
@@ -188,6 +187,7 @@ export class Game {
     nextRound()
     {
         this.round++;
+        this.remainingTime = this.initialTime - (10 * (this.round -1))
     }
     endGame()
     {
@@ -210,10 +210,10 @@ export class Game {
         if(this.compChoiceRPS === "")
         {
             this.compChoiceRPS = this.comp.getRPSChoice();
+            this.compChoiceAMT = "";
             this.compRPSStatus = null;
-            console.log(this.compChoiceRPS);
+
         }
-        //console.log(this.RenderSystem.opp.rpsAnimFinished);
         if(this.RenderSystem.opp.rpsAnimFinished === true)
         {
             //console.log("compare RPS running");
@@ -233,29 +233,25 @@ export class Game {
             if(this.compChoiceAMT === "")
             {
                 this.compChoiceAMT = this.comp.getAMTChoice();
+                this.compChoiceRPS = "";
                 this.RenderSystem.opp.amtChoice(this.compChoiceAMT);
-                console.log(this.RenderSystem.opp.amtOrder);
                 this.RenderSystem.opp.amtAnimActive = true;
+                this.compAMTStatus = null;
             }
             if(this.RenderSystem.opp.amtAnimFinished === true)
             {
-                if(this.RenderSystem.opp.amtChoiceAnimFinished)
-                {
-                    if(this.compAMTstatus === null)
-                    {
-                        this.compareAMT();
-                    }
-                }
+                //if(this.compAMTstatus === null)
+                //{
+                    //this.compareAMT();
+                //}
             }
-        if(this.RenderSystem.opp.amtChoiceAnimFinished === true)
+        if(this.RenderSystem.opp.amtAnimFinished === true)
         {
-            rps = true;
-            this.compChoiceAMT = "";
-            this.compAMTStatus = null;
+            this.RenderSystem.opp.resetRPS();
+            this.amt = false;
+            this.rps = true;
+
             this.compRPSStatus = null;
-            amt = false;
-            this.RenderSystem.opp.rpsAnimActive = true;
-            this.RenderStatem.opp.amtAnimActive = false;
         }
     }
     compareRPS()
